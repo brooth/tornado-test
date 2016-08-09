@@ -1,0 +1,9 @@
+.env/
+.idea/
+__pycache__/
+
+.vimsession
+
+*.pyc
+*.db
+*.log
