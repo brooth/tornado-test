@@ -4,30 +4,27 @@ import threading
 import time
 
 async def call(d):
-    print('1')
+    print('call from %s' % threading.current_thread())
     await async_call(d)
-    print('2')
+    print('end call from %s' % threading.current_thread())
 
 
 @asyncio.coroutine
 def async_call(d):
-    def delay(d, future):
-        print('begin')
+    def delay():
+        print('delay from %s' % threading.current_thread())
         time.sleep(d)
-        print('middle')
-        loop.call_soon_threadsafe(future.done)
-        print('end')
+        print('end delay from %s' % threading.current_thread())
 
-    future = loop.create_future()
-    thread = threading.Thread(target=delay, args=(d, future))
-    thread.start()
-    return (yield from future)
+    loop = asyncio.get_event_loop()
+    return (yield from loop.run_in_executor(None, delay))
 
 loop = asyncio.get_event_loop()
 tasks = [
     call(3),
     call(1),
-    call(1.5)
+    call(1.5),
+    call(5)
 ]
 loop.run_until_complete(asyncio.gather(*tasks))
 loop.close()
