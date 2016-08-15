@@ -19,7 +19,7 @@ class AuthAPI(Handler):
     """
     APIs /auth
     """
-    @auth_required(secret=True, barier=False)
+    @auth_required(barier=False, secret=True)
     async def get(self, user_id, _consumer_id=None):
         # pylint: disable=locally-disabled, arguments-differ
         """
@@ -29,13 +29,14 @@ class AuthAPI(Handler):
 
         auth = await db.auths.find_one({'consumer_id': _consumer_id, 'user_id': user_id})
         if not auth:
-            auth = {}
-            auth['user_id'] = user_id
-            auth['consumer_id'] = _consumer_id
-            auth['access_token'] = gen_token()
-            auth['refresh_token'] = gen_token(2)
-            auth['expire_date'] = datetime.utcnow() + timedelta(seconds=TOKEN_EXPIRES_IN_SECONDS)
-            auth['end_date'] = datetime.utcnow() + timedelta(seconds=TOKEN_ENDS_IN_SECONDS)
+            auth = {
+                'user_id': user_id,
+                'consumer_id': _consumer_id,
+                'access_token': gen_token(),
+                'refresh_token': gen_token(2),
+                'expire_date': datetime.utcnow() + timedelta(seconds=TOKEN_EXPIRES_IN_SECONDS),
+                'end_date': datetime.utcnow() + timedelta(seconds=TOKEN_ENDS_IN_SECONDS)
+            }
             await db.auths.insert(auth)
 
         expires_in = int((auth['expire_date'] - datetime.utcnow()).total_seconds())

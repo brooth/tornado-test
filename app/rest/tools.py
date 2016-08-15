@@ -73,7 +73,7 @@ def _get_auth_code(handler, method):
     return creds[len(method) + 1:]
 
 
-def auth_required(function=None, barier=True, secret=False):
+def auth_required(function=None, *, barier=True, secret=False):
     """
     decorator check barier auth and passes a "_user_id" through kwargs
     """
