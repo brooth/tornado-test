@@ -49,10 +49,12 @@ class Handler(RequestHandler):
         return json.loads(self.request.body.decode('utf8'))
 
 
-def init(app: Application):
+def init(app):
     """ initializes rest api """
     from app.rest.user_api import UserAPI
+    from app.rest.auth_api import AuthAPI
 
     app.add_handlers(r'.*', [
-        (r'/users', UserAPI)
+        (r'/users', UserAPI),
+        (r'/auth/([^/]+)', AuthAPI)
     ])

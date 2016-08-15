@@ -5,21 +5,21 @@ import re
 
 from app.model.model import db
 from app.rest.rest import Handler
-from app.rest.tools import token_auth, jsonify, password_hash
+from app.rest.tools import auth_required, jsonify, password_hash
 
 
 class UserAPI(Handler):
     # pylint: disable=locally-disabled, abstract-method
     """
-    Manages "/users" requestss
+    Manages "/users"
     """
-    @token_auth
+    @auth_required
     async def get(self, _user_id=None):
         # pylint: disable=locally-disabled, arguments-differ
         """
         GET /users
         """
-        user = await db.users.find_one({'_id': _user_id}, {'name': 1})
+        user = await db.users.find_one({'_id': _user_id}, {'_id': 0, 'name': 1})
         if not user:
             return self.error_response('User not found', 404)
         self.write(jsonify(user))
