@@ -1,43 +1,58 @@
+# pylint: disable=locally-disabled, invalid-name
+""" Main REST API module """
 
 import json
+from logging import getLogger
 
-from tornado.web import RequestHandler, Application
+from tornado.web import RequestHandler, Application, HTTPError
 
-from app.model.model import db
+from app.rest.tools import jsonify
+
+logger = getLogger()
+
+
+class ErrorResponse(HTTPError):
+    """ represents not OK response """
+    def __init__(self, message, status_code=400, error_code=-1):
+        super().__init__(reason=message, status_code=status_code)
+        self.message = message
+        self.error_code = error_code
 
 
 class Handler(RequestHandler):
-    def jsonify(self, doc):
-        if '_id' in doc:
-            doc['id'] = str(doc.pop('_id'))
-        return json.dumps(doc, indent=4, sort_keys=True) + '\n'
+    # pylint: disable=locally-disabled, abstract-method
+    """ Base API Handler """
+    def error_response(self, message, status_code=400, error_code=-1):
+        """ writes errror response as json """
+        self.set_header('Content-Type', 'text/json')
+        self.set_status(status_code, message)
+        if error_code != -1:
+            self.write(jsonify({
+                "message": message,
+                "error_code": error_code
+            }))
+        else:
+            self.write(jsonify({
+                "message": message
+            }))
 
-    async def jsonify_list(self, docs):
-        data = []
-        async for doc in docs:
-            if '_id' in doc:
-                doc['id'] = str(doc.pop('_id'))
-            data.append(doc)
-        return json.dumps(data, indent=4, sort_keys=True)
+    def write_error(self, status_code, **kwargs):
+        if "exc_info" in kwargs:
+            ex = kwargs["exc_info"][1]
+            if isinstance(ex, ErrorResponse):
+                self.error_response(ex.message, status_code, ex.error_code)
+            else:
+                self.error_response(str(ex), status_code, -1)
 
-    def req_json(self):
+    def read_json(self):
+        """ reads json from request body """
         return json.loads(self.request.body.decode('utf8'))
 
 
-class MainHandler(Handler):
-    async def get(self):
-        docs = db.users.find({}, {'name': 1})
-        data = await self.jsonify_list(docs)
-        self.write(data)
-
-    async def post(self):
-        user_id = await db.users.insert(self.req_json())
-        self.write(str(user_id))
-
-
 def init(app: Application):
-    app.add_handlers(
-        r'.*',
-        [
-            (r'/foo', MainHandler)
-        ])
+    """ initializes rest api """
+    from app.rest.user_api import UserAPI
+
+    app.add_handlers(r'.*', [
+        (r'/users', UserAPI)
+    ])
