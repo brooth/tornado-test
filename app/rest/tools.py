@@ -31,7 +31,7 @@ def _prepare_doc(doc):
 def jsonify(doc):
     """ document to json. escapes '_id' """
     doc = _prepare_doc(doc)
-    return json.dumps(doc, indent=4, sort_keys=True) + '\n'
+    return json.dumps(doc, sort_keys=True)
 
 
 async def jsonify_list(docs):
@@ -40,7 +40,7 @@ async def jsonify_list(docs):
     async for doc in docs:
         doc = _prepare_doc(doc)
         data.append(doc)
-    return json.dumps(data, indent=4, sort_keys=True) + '\n'
+    return json.dumps(data, sort_keys=True)
 
 
 def password_hash(password):

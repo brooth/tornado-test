@@ -51,6 +51,8 @@ class Handler(RequestHandler):
 
 def init(app):
     """ initializes rest api """
+    logger.debug('init rest')
+
     from app.rest.user_api import UserAPI
     from app.rest.auth_api import AuthAPI
 

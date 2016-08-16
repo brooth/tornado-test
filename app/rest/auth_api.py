@@ -34,8 +34,8 @@ class AuthAPI(Handler):
                 'consumer_id': _consumer_id,
                 'access_token': gen_token(),
                 'refresh_token': gen_token(2),
-                'expire_date': datetime.utcnow() + timedelta(seconds=TOKEN_EXPIRES_IN_SECONDS),
-                'end_date': datetime.utcnow() + timedelta(seconds=TOKEN_ENDS_IN_SECONDS)
+                'expire_date': datetime.utcnow() + timedelta(seconds=token_expires_in_seconds),
+                'end_date': datetime.utcnow() + timedelta(seconds=token_ends_in_seconds)
             }
             await db.auths.insert(auth)
 
